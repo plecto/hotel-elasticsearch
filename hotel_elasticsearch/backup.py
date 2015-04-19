@@ -3,8 +3,7 @@ import time
 import datetime
 from hotel_elasticsearch.dist_locks import Timer, BlockedByAnotherTimerException
 import requests
-from requests.packages.urllib3.exceptions import HTTPError
-
+from requests.exceptions import HTTPError
 
 class BackupManager(object):
     def run_backup(self):
