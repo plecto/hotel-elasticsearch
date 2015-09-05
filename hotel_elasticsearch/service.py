@@ -1,7 +1,9 @@
 import platform
 from subprocess import Popen
 import os
+import logging
 
+logger = logging.getLogger('hotel_elasticsearch.service')
 
 class ElasticSearchService(object):
 
@@ -13,6 +15,7 @@ class ElasticSearchService(object):
         return None
 
     def start(self):
+        logger.info("Starting Elastic Search")
         if self._platform() == 'OS X':
             Popen(['launchctl', 'load', os.path.expanduser('~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist')]).wait()
         elif self._platform() == 'linux':
@@ -22,6 +25,7 @@ class ElasticSearchService(object):
             raise Exception("Cannot manage Elastic Search on this platform")
 
     def stop(self):
+        logger.info("Stopping Elastic Search")
         if self._platform() == 'OS X':
             if Popen(['launchctl', 'unload', os.path.expanduser('~/Library/LaunchAgents/homebrew.mxcl.elasticsearch.plist')]).wait():
                 raise Exception("Could not stop Elastic Search")

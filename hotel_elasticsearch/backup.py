@@ -4,15 +4,21 @@ import datetime
 from hotel_elasticsearch.dist_locks import Timer, BlockedByAnotherTimerException
 import requests
 from requests.exceptions import HTTPError
+import logging
+
+logger = logging.getLogger('hotel_elasticsearch.backup')
 
 class BackupManager(object):
     def run_backup(self):
         now = datetime.datetime.now()
+        snapshot_name = 'snapshot_%s-%s-%s_%s' % (now.year, now.month, now.day, now.hour)
+        logger.info("Executing backup command, snapshot name: %s" % snapshot_name)
         r = requests.put("http://localhost:9200/_snapshot/%s/%s/" % (
             'hotel-backup',
-            'snapshot_%s-%s-%s_%s' % (now.year, now.month, now.day, now.hour)
+            snapshot_name
         ))
         r.raise_for_status()
+        logger.info("Snapshot successfully scheduled")
 
 
 def backup_thread():
@@ -22,7 +28,8 @@ def backup_thread():
                 bm = BackupManager()
                 try:
                     bm.run_backup()
-                except HTTPError:
+                except HTTPError as e:
+                    logger.exception(e)
                     t.clear_timer()  # If backup failed, try again on this or another node
         except BlockedByAnotherTimerException:  # Backup has already been run, let it pass
             pass

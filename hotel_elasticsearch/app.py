@@ -7,7 +7,36 @@ from flask import Flask, jsonify
 from hotel_elasticsearch.service import ElasticSearchService
 import os
 import sys
+import logging
 
+
+logging.config.dictConfig({
+    'version': 1,
+    'disable_existing_loggers': False,
+    'loggers': {
+        'hotel_elasticsearch.backup': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False
+        },
+        'hotel_elasticsearch.service': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'DEBUG',
+        }
+    },
+    'root': {
+        'level': 'WARN',
+        'handlers': ['console']
+    }
+
+})
 
 app = Flask(__name__)
 
