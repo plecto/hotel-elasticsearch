@@ -10,7 +10,7 @@ class BackupManager(object):
         now = datetime.datetime.now()
         r = requests.put("http://localhost:9200/_snapshot/%s/%s/" % (
             'hotel-backup',
-            'snapshot_%s-%s-%sT%s' % (now.year, now.month, now.day, now.hour)
+            'snapshot_%s-%s-%s_%s' % (now.year, now.month, now.day, now.hour)
         ))
         r.raise_for_status()
 
