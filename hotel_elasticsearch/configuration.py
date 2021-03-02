@@ -10,11 +10,11 @@ class ElasticSearchConfig(OrderedDict):
         self['cluster']['name'] = cluster.elastic_search_cluster_name
         self['node']['data'] = cluster.data
         self['node']['master'] = cluster.master
-        self['nodes']['roles'] = []
+        self['node']['roles'] = []
         if cluster.data:
-            self['nodes']['roles'].append('data')
+            self['node']['roles'].append('data')
         if cluster.master:
-            self['nodes']['roles'].append('master')
+            self['node']['roles'].append('master')
         self['http.enabled'] = not (cluster.data and cluster.master) or (cluster.data and cluster.master)
 
     def save(self):
