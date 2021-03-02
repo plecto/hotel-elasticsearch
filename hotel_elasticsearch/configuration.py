@@ -8,8 +8,8 @@ class ElasticSearchConfig(OrderedDict):
         with open(config_file) as f:
             super(ElasticSearchConfig, self).__init__(sorted(yaml.safe_load(f.read()).items()))
         self['cluster']['name'] = cluster.elastic_search_cluster_name
-        self['node']['data'] = cluster.data
-        self['node']['master'] = cluster.master
+        #self['node']['data'] = cluster.data
+        #self['node']['master'] = cluster.master
         self['node']['roles'] = []
         if cluster.data:
             self['node']['roles'].append('data')
