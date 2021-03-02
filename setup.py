@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='hotel-elasticsearch',
-    version='1.0.3',
+    version='1.0.4',
     packages=['hotel_elasticsearch'],
     url='',
     license='',
