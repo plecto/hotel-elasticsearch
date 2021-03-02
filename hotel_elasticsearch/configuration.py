@@ -15,7 +15,6 @@ class ElasticSearchConfig(OrderedDict):
             self['node']['roles'].append('data')
         if cluster.master:
             self['node']['roles'].append('master')
-        self['http.enabled'] = not (cluster.data and cluster.master) or (cluster.data and cluster.master)
 
     def save(self):
         """
