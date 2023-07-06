@@ -12,7 +12,7 @@ setup(
     description='',
     install_requires=[
         'PyYAML',
-        'flask==2.1.3',
+        'flask==2.2.5',
         'boto',
         'requests',
         'frigga-snake'
