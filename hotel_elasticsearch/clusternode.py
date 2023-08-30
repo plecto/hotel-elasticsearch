@@ -8,13 +8,18 @@ class ClusterNode(object):
     def __init__(self, name):
         parser = Names(name)
         self._name = name
-        self._elastic_search_cluster_name = "%s-%s" % (parser.app, parser.stack)
+        self._elastic_search_cluster_name = f"{parser.app}-{parser.stack}"
+        self._backup_path = parser.stack
         self._tags = None
 
 
     @property
     def elastic_search_cluster_name(self):
         return self._elastic_search_cluster_name
+
+    @property
+    def backup_path(self):
+        return self._backup_path
 
     @property
     def is_master(self):

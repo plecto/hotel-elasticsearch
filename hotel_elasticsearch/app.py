@@ -46,13 +46,13 @@ def run():
     else:
         raise Exception("No name provided, please provide it as 1st argument")
 
-    cluster = ClusterNode(name)
+    cluster_node = ClusterNode(name)
 
     try:
-        config = ElasticSearchConfig(cluster)
+        config = ElasticSearchConfig(cluster_node)
     except IOError:
         if len(sys.argv) > 2:
-            config = ElasticSearchConfig(cluster, sys.argv[2])
+            config = ElasticSearchConfig(cluster_node, sys.argv[2])
         else:
             raise Exception("No config path provided, please provide it as 2nd argument")
     config.save()
@@ -62,7 +62,7 @@ def run():
     if not service.running():
         service.start()
 
-    backup = Thread(target=backup_thread, )
+    backup = Thread(target=backup_thread, args=(cluster_node,) )
     backup.daemon = True
     backup.start()
 
