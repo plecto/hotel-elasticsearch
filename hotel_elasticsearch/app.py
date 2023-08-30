@@ -3,7 +3,6 @@ import time
 from hotel_elasticsearch.backup import backup_thread
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import ElasticSearchConfig
-from flask import Flask, jsonify
 from hotel_elasticsearch.service import ElasticSearchService
 import os
 import sys
@@ -38,31 +37,6 @@ logging.config.dictConfig({
 
 })
 
-app = Flask(__name__)
-
-@app.route("/")
-def home():
-    service = ElasticSearchService()
-    return jsonify(
-        running=service.running()
-    )
-
-@app.route("/start", methods=['POST'])
-def start_es():
-    service = ElasticSearchService()
-    service.start()
-    return jsonify(
-
-    )
-
-@app.route("/stop", methods=['POST'])
-def stop_es():
-    service = ElasticSearchService()
-    service.stop()
-    return jsonify(
-
-    )
-
 
 def run():
     if 'CLOUD_CLUSTER' in os.environ:
@@ -72,7 +46,7 @@ def run():
     else:
         raise Exception("No name provided, please provide it as 1st argument")
 
-    cluster = Cluster(name)
+    cluster = ClusterNode(name)
 
     try:
         config = ElasticSearchConfig(cluster)
@@ -87,10 +61,6 @@ def run():
 
     if not service.running():
         service.start()
-
-    webserver = Thread(target=app.run, )
-    webserver.daemon = True
-    webserver.start()
 
     backup = Thread(target=backup_thread, )
     backup.daemon = True
