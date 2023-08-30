@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='hotel-elasticsearch',
-    version='1.0.5',
+    version='2.0.0',
     packages=['hotel_elasticsearch'],
     url='',
     license='',
@@ -12,7 +12,7 @@ setup(
     description='',
     install_requires=[
         'PyYAML',
-        'boto',
+        'boto3',
         'requests',
         'frigga-snake'
     ],
