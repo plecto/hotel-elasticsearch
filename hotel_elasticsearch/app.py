@@ -1,7 +1,7 @@
 from threading import Thread
 import time
 from hotel_elasticsearch.backup import backup_thread
-from hotel_elasticsearch.cluster import Cluster
+from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import ElasticSearchConfig
 from flask import Flask, jsonify
 from hotel_elasticsearch.service import ElasticSearchService
