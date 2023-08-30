@@ -20,32 +20,34 @@ class BackupManager(object):
 
     def check_backup(self):
         try:
-            result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
-            result.raise_for_status()
-            result = requests.get('http://localhost:9200/_slm/policy/nightly-backup')
-            result.raise_for_status()
-        except HTTPError as e:
+            try:
+                result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
+                result.raise_for_status()
+                result = requests.get('http://localhost:9200/_slm/policy/nightly-backup')
+                result.raise_for_status()
+            except HTTPError as e:
+                logger.exception(e)
+                self.configure_backup()
+
+            try:
+                result = requests.get('http://localhost:9200/_snapshot/cluster_backup/*?order=desc&size=1')
+                result.raise_for_status()
+            except HTTPError as e:
+                logger.exception(e)
+                raise BackupException('Backup listing request failed')
+
+            result_dict = result.json()
+            if 'snapshots' not in result_dict or len(result_dict['snapshots']) == 0:
+                raise BackupException('No backups found')
+            else:
+                snapshot = result_dict['snapshots'][0]
+                if snapshot['state'] != 'SUCCESS':
+                    raise BackupException('Latest backup is not in a success state')
+                elif snapshot["start_time"] < datetime.datetime.now() - datetime.timedelta(days=1):
+                    raise BackupException('Latest backup is older than 1 day')
+        except BackupException as e:
             logger.exception(e)
-            self.configure_backup()
-
-        try:
-            result = requests.get('http://localhost:9200/_snapshot/cluster_backup/*?order=desc&size=1')
-            result.raise_for_status()
-        except HTTPError as e:
-            logger.exception(e)
-            raise BackupException('Backup listing request failed')
-
-        result_dict = result.json()
-        if 'snapshots' not in result_dict or len(result_dict['snapshots']) == 0:
-            raise BackupException('No backups found')
-        else:
-            snapshot = result_dict['snapshots'][0]
-            if snapshot['state'] != 'SUCCESS':
-                raise BackupException('Latest backup is not in a success state')
-            elif snapshot["start_time"] < datetime.datetime.now() - datetime.timedelta(days=1):
-                raise BackupException('Latest backup is older than 1 day')
-
-
+            # TODO: Send notification to Pagerduty
 
     def restore_backup(self):
         raise NotImplementedError('This is a dangerous operation, do it manually')
