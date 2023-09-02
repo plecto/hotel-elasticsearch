@@ -18,6 +18,11 @@ logging.config.dictConfig({
             'handlers': ['console'],
             'propagate': False
         },
+        'hotel_elasticsearch.cluster_node': {
+            'level': 'INFO',
+            'handlers': ['console'],
+            'propagate': False
+        },
         'hotel_elasticsearch.service': {
             'level': 'INFO',
             'handlers': ['console'],

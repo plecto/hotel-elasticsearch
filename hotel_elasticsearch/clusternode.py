@@ -1,7 +1,11 @@
+import logging
+
 import requests
 import boto3.ec2
 import botocore.exceptions
 from frigga_snake.names import Names
+
+logger = logging.getLogger('hotel_elasticsearch.cluster_node')
 
 
 class ClusterNode(object):
@@ -24,6 +28,23 @@ class ClusterNode(object):
     @property
     def is_master(self):
         return 'master' in self._name
+
+    @property
+    def is_elected_master(self):
+        try:
+            response = requests.get('localhost:9200/_cat/master', timeout=1)
+            response.raise_for_status()
+            return response.text.split()[-1] == self.instance_id
+        except (
+            requests.exceptions.ConnectionError,
+            requests.exceptions.ConnectTimeout,
+            requests.exceptions.HTTPError,
+            IndexError
+        ):
+            logger.exception('Could not determine if this node is the elected master')
+            return False
+
+
 
     @property
     def is_data(self):

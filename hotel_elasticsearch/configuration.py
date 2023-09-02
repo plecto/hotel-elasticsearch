@@ -24,3 +24,18 @@ class ElasticSearchConfig(OrderedDict):
         with open(self.config_file, 'w') as f:
             config = yaml.safe_dump(dict(self), default_flow_style=False)
             f.write(config)
+
+
+class HotelElasticSearchConfig(OrderedDict):
+    def __init__(self, cluster, config_file="/etc/hotel-elasticsearch/hotel-config.yml"):
+        # Set defaults
+        self['hotel']['alerter'] = None
+        self['hotel']['backup']['bucket'] = 'hotel-elasticsearch-backup'
+
+        self.config_file = config_file
+        try:
+            with open(config_file) as f:
+                super(HotelElasticSearchConfig, self).__init__(sorted(yaml.safe_load(f.read()).items()))
+        except FileNotFoundError:
+            pass
+

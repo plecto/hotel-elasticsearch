@@ -7,6 +7,9 @@ import requests
 from requests.exceptions import HTTPError
 import logging
 
+from hotel_elasticsearch.alerting import alerter_factory
+from hotel_elasticsearch.configuration import HotelElasticSearchConfig
+
 logger = logging.getLogger('hotel_elasticsearch.backup')
 
 
@@ -17,14 +20,12 @@ class BackupException(Exception):
 class BackupManager(object):
     def __init__(self, cluster_node):
         self.cluster_node = cluster_node
+        self.config = HotelElasticSearchConfig()
 
     def check_backup(self):
         try:
             try:
-                result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
-                result.raise_for_status()
-                result = requests.get('http://localhost:9200/_slm/policy/nightly-backup')
-                result.raise_for_status()
+                self._check_backup_configuration()
             except HTTPError as e:
                 logger.exception(e)
                 self.configure_backup()
@@ -41,13 +42,21 @@ class BackupManager(object):
                 raise BackupException('No backups found')
             else:
                 snapshot = result_dict['snapshots'][0]
-                if snapshot['state'] != 'SUCCESS':
+                if snapshot['state'] not in ['SUCCESS', 'IN_PROGRESS']:
                     raise BackupException('Latest backup is not in a success state')
                 elif snapshot["start_time"] < datetime.datetime.now() - datetime.timedelta(days=1):
                     raise BackupException('Latest backup is older than 1 day')
         except BackupException as e:
             logger.exception(e)
-            # TODO: Send notification to Pagerduty
+            alerter = alerter_factory()
+            alerter.alert(str(e))
+
+    def _check_backup_configuration(self):
+        result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
+        result.raise_for_status()
+        result = requests.get('http://localhost:9200/_slm/policy/nightly-backup')
+        result.raise_for_status()
+
 
     def restore_backup(self):
         raise NotImplementedError('This is a dangerous operation, do it manually')
@@ -103,7 +112,7 @@ class BackupManager(object):
 
     @property
     def bucket(self):
-        return os.environ.get('CLUSTER_BACKUP_BUCKET', 'hotel-elasticsearch-backup')
+        return HotelElasticSearchConfig()['bucket']
 
 
 def backup_thread(cluster_node):
