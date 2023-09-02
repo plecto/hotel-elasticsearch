@@ -23,6 +23,9 @@ class BackupManager(object):
         self.config = HotelElasticSearchConfig()
 
     def check_backup(self):
+        # Only the elected master should check the backup
+        if not self.cluster_node.is_elected_master:
+            return
         try:
             try:
                 self._check_backup_configuration()
