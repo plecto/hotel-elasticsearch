@@ -67,14 +67,15 @@ class ClusterNode(object):
         if self._tags is not None:
             return self._tags
         else:
+            self._tags = {}
             if self.instance_id:
                 try:
                     ec2 = boto3_client_factory('ec2')
                     ec2instance = ec2.Instance(self.instance_id)
-                    self._tags = ec2instance.tags
+                    # Tag keys must be unique, so we can safely flatten the list of tags into one dict
+                    for tag in ec2instance.tags:
+                        self._tags[tag['Key']] = tag['Value']
                 except botocore.exceptions.ClientError:
                     pass
-            else:
-                self._tags = {}
 
         return self._tags
