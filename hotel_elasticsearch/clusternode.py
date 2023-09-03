@@ -1,9 +1,10 @@
 import logging
 
 import requests
-import boto3.ec2
 import botocore.exceptions
 from frigga_snake.names import Names
+
+from hotel_elasticsearch.aws_utils import boto3_client_factory
 
 logger = logging.getLogger('hotel_elasticsearch.cluster_node')
 
@@ -68,7 +69,7 @@ class ClusterNode(object):
         else:
             if self.instance_id:
                 try:
-                    ec2 = boto3.resource('ec2')
+                    ec2 = boto3_client_factory('ec2')
                     ec2instance = ec2.Instance(self.instance_id)
                     self._tags = ec2instance.tags
                 except botocore.exceptions.ClientError:
