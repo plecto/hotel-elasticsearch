@@ -6,7 +6,7 @@ from hotel_elasticsearch.configuration import ElasticSearchConfig
 from hotel_elasticsearch.service import ElasticSearchService
 import os
 import sys
-import logging
+import logging.config
 
 
 logging.config.dictConfig({
