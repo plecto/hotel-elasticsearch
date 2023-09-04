@@ -1,5 +1,9 @@
+import json
 from threading import Thread
 import time
+
+import requests
+
 from hotel_elasticsearch.backup import backup_thread
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import ElasticSearchConfig
@@ -66,6 +70,24 @@ def run():
 
     if not service.running():
         service.start()
+
+    # Install any required templates only on the first run
+    if cluster_node.tags.get('initial_master', 'False') == 'True':
+        try:
+            for file in os.listdir('/etc/hotel-elasticsearch/templates'):
+                if file.endswith('.json'):
+                    with open('/etc/hotel-elasticsearch/templates/' + file) as f:
+                        response = requests.put(
+                            'http://localhost:9200/_template/' + file[:-5],
+                            json.dumps(file.read()),
+                            headers={'Content-Type': 'application/json'},
+                            params={'include_type_name': 'true'},
+                        )
+                        response.raise_for_status()
+
+        except FileNotFoundError():
+            pass
+
 
     backup = Thread(target=backup_thread, args=(cluster_node,) )
     backup.daemon = True

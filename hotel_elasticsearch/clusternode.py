@@ -33,7 +33,7 @@ class ClusterNode(object):
     @property
     def is_elected_master(self):
         try:
-            response = requests.get('localhost:9200/_cat/master', timeout=1)
+            response = requests.get('http://localhost:9200/_cat/master', timeout=1)
             response.raise_for_status()
             return response.text.split()[-1] == self.instance_id
         except (

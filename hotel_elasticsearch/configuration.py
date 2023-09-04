@@ -27,15 +27,22 @@ class ElasticSearchConfig(OrderedDict):
 
 
 class HotelElasticSearchConfig(OrderedDict):
-    def __init__(self, cluster, config_file="/etc/hotel-elasticsearch/hotel-config.yml"):
-        # Set defaults
-        self['hotel']['alerter'] = None
-        self['hotel']['backup']['bucket'] = 'hotel-elasticsearch-backup'
-
-        self.config_file = config_file
+    def __init__(self, config_file="/etc/hotel-elasticsearch/hotel-config.yml"):
         try:
             with open(config_file) as f:
                 super(HotelElasticSearchConfig, self).__init__(sorted(yaml.safe_load(f.read()).items()))
         except FileNotFoundError:
             pass
+
+        # Set defaults
+        if 'hotel' not in self:
+            self['hotel'] = OrderedDict()
+        if 'alerter' not in self['hotel']:
+            self['hotel']['alerter'] = None
+        if 'backup' not in self['hotel']:
+            self['hotel']['backup'] = OrderedDict()
+        if 'bucket' not in self['hotel']['backup']:
+            self['hotel']['backup']['bucket'] = 'hotel-elasticsearch-backup'
+
+
 

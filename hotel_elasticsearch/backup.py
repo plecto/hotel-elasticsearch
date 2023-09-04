@@ -51,7 +51,7 @@ class BackupManager(object):
                     raise BackupException('Latest backup is older than 1 day')
         except BackupException as e:
             logger.exception(e)
-            alerter = alerter_factory()
+            alerter = alerter_factory(self.cluster_node)
             alerter.alert(str(e))
 
     def _check_backup_configuration(self):
@@ -73,14 +73,12 @@ class BackupManager(object):
             result = requests.put(
                 'http://localhost:9200/_snapshot/cluster_backup',
                 json={
-                    {
                         'type': 's3',
                         'settings': {
                             'bucket': self.bucket,
                             'base_path': self.cluster_node.backup_path,
                             'max_snapshot_bytes_per_sec': '200mb',
                         }
-                    }
                 }
             )
             result.raise_for_status()
@@ -92,7 +90,7 @@ class BackupManager(object):
         try:
             result = requests.put(
                 'http://localhost:9200/_slm/policy/nightly-backup',
-                {
+                json={
                     'schedule': '0 30 3 * * ?',
                     'name': '<nightly-backup-{now/d}>',
                     'repository': 'cluster_backup',
@@ -115,7 +113,7 @@ class BackupManager(object):
 
     @property
     def bucket(self):
-        return HotelElasticSearchConfig()['bucket']
+        return HotelElasticSearchConfig()['hotel']['backup']['bucket']
 
 
 def backup_thread(cluster_node):

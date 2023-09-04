@@ -6,6 +6,7 @@ from hotel_elasticsearch.configuration import HotelElasticSearchConfig
 
 class BaseAlerter(object):
     def __init__(self, config: dict, cluster_node: ClusterNode):
+        self.cluster_node = cluster_node
         self.config = config
         self.validate_config()
 
@@ -14,6 +15,14 @@ class BaseAlerter(object):
 
     def alert(self, message):
         raise NotImplementedError
+
+
+class NoopAlerter(BaseAlerter):
+    def validate_config(self):
+        pass
+
+    def alert(self, message):
+        pass
 
 
 class PagerDutyAlerter(BaseAlerter):
@@ -40,3 +49,5 @@ def alerter_factory(cluster_node):
     config = HotelElasticSearchConfig()
     if config['hotel']['alerter'] == 'PagerDutyAlerter':
         return PagerDutyAlerter(config['hotel']['pagerduty'], cluster_node)
+    else:
+        return NoopAlerter({}, cluster_node)
