@@ -84,6 +84,8 @@ class BackupManager(object):
             result.raise_for_status()
         except HTTPError as e:
             logger.exception(e)
+            # Even though the request fails the repository is still created and should be deleted.
+            requests.delete('http://localhost:9200/_snapshot/cluster_backup')
             raise BackupException('Could not configure backup bucket')
 
     def _configure_backup_schedule(self):
