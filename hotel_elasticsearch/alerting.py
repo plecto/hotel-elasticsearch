@@ -2,13 +2,14 @@ import botocore
 import requests
 from aws_secretsmanager_caching import SecretCacheConfig, SecretCache
 
+from hotel_elasticsearch.aws_utils import botocore_client_factory
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import HotelElasticSearchConfig
 
 
 class AWSSecretsMixin(object):
-    def __init__(self):
-        client = botocore.session.get_session().create_client('secretsmanager')
+    def __init__(self, *args, **kwargs):
+        client = botocore_client_factory('secretsmanager')
         cache_config = SecretCacheConfig()  # See below for defaults
         self.cache = SecretCache(config=cache_config, client=client)
     def get_secret(self, secret_name):
@@ -38,7 +39,7 @@ class NoopAlerter(AWSSecretsMixin, BaseAlerter):
 
 class PagerDutyAlerter(AWSSecretsMixin, BaseAlerter):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__(self, *args, **kwargs)
 
     def validate_config(self):
         assert 'pagerduty' in self.config
