@@ -14,7 +14,8 @@ setup(
         'PyYAML',
         'boto3',
         'requests',
-        'frigga-snake'
+        'frigga-snake',
+        'aws-secretsmanager-caching'
     ],
     entry_points={
         'console_scripts': [
