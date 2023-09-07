@@ -12,6 +12,7 @@ class AWSSecretsMixin(object):
         client = botocore_client_factory('secretsmanager')
         cache_config = SecretCacheConfig()  # See below for defaults
         self.cache = SecretCache(config=cache_config, client=client)
+
     def get_secret(self, secret_name):
         return self.cache.get_secret_string(secret_name)
 
