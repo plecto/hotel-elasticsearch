@@ -60,9 +60,37 @@ class BackupManager(object):
         result = requests.get('http://localhost:9200/_slm/policy/nightly-backup')
         result.raise_for_status()
 
+    def restore_backup(self, backup_id):
+        if not self.cluster_is_empty():
+            raise BackupException('Cannot restore backup, cluster is not empty')
+        if not self.restore_repository_exists():
+            raise BackupException('Cannot restore backup, restore repository does not exist')
+        try:
+            result = requests.post(
+                f'http://localhost:9200/_snapshot/cluster_restore/{backup_id}/_restore',
+                {
+                    'indices': '*,-.*',
+                }
+            )
+            result.raise_for_status()
+        except HTTPError as e:
+            logger.exception(e)
+            raise BackupException('Backup restore request failed')
 
-    def restore_backup(self):
-        raise NotImplementedError('This is a dangerous operation, do it manually')
+    def cluster_is_empty(self):
+        response = requests.get('/_cluster/stats')
+        if response.json()['indices']['count'] > 0:
+            return False
+        return True
+
+    def restore_repository_exists(self):
+        try:
+            result = requests.get('http://localhost:9200/_snapshot/cluster_restore')
+            result.raise_for_status()
+            return True
+        except HTTPError as e:
+            logger.exception(e)
+            return False
 
     def configure_backup(self):
         self._configure_backup_repository()
@@ -86,7 +114,29 @@ class BackupManager(object):
             logger.exception(e)
             # Even though the request fails the repository is still created and should be deleted.
             requests.delete('http://localhost:9200/_snapshot/cluster_backup')
-            raise BackupException('Could not configure backup bucket')
+            raise BackupException('Could not configure backup repository')
+
+    def configure_restore_repository(self, backup_path, bucket=None):
+        if bucket is None:
+            bucket = self.bucket
+        try:
+            result = requests.put(
+                'http://localhost:9200/_snapshot/cluster_restore',
+                json={
+                        'type': 's3',
+                        'settings': {
+                            'bucket': bucket,
+                            'base_path': backup_path,
+                            'readonly': True
+                        }
+                }
+            )
+            result.raise_for_status()
+        except HTTPError as e:
+            logger.exception(e)
+            # Even though the request fails the repository is still created and should be deleted.
+            requests.delete('http://localhost:9200/_snapshot/cluster_restore')
+            raise BackupException('Could not configure restore repository')
 
     def _configure_backup_schedule(self):
         try:
@@ -111,6 +161,11 @@ class BackupManager(object):
         except HTTPError as e:
             logger.exception(e)
             raise BackupException('Could not configure backup schedule')
+
+    def list_snapshots_from_restore_repository(self):
+        result = requests.get('http://localhost:9200/_cat/snapshot/cluster_restore/?h=id,s,sti,eti,i,ss,ff,r&v')
+        result.raise_for_status()
+        return result.text()
 
 
     @property

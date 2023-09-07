@@ -19,7 +19,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'hotel-elasticsearch = hotel_elasticsearch.app:run',
+            'hotel-elasticsearch = hotel_elasticsearch.app:main',
         ]
     }
 )

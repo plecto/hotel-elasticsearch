@@ -1,10 +1,11 @@
+import argparse
 import json
 from threading import Thread
 import time
 
 import requests
 
-from hotel_elasticsearch.backup import backup_thread
+from hotel_elasticsearch.backup import backup_thread, BackupManager
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import ElasticSearchConfig
 from hotel_elasticsearch.service import ElasticSearchService
@@ -47,14 +48,57 @@ logging.config.dictConfig({
 })
 
 
-def run():
-    if 'CLOUD_CLUSTER' in os.environ:
-        name = os.environ['CLOUD_CLUSTER']
-    elif len(sys.argv) > 1:
-        name = sys.argv[1]
-    else:
-        raise Exception("No name provided, please provide it as 1st argument")
+def init_argparse() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s [OPTION] [FILE]...",
+        description="Manage and run elasticsearch cluster nodes",
+    )
+    parser.add_argument(
+        "-v", "--version", action="version",
+        version = f"{parser.prog} version 1.0.0"
+    )
+    parser.add_argument('--name', help='Name of the cluster. If left out will be read from CLOUD_CLUSTER env var')
+    parser.add_argument('--run', help='Run the elasticsearch node', action='store_true')
+    parser.add_argument(
+        '--set_restore_cluster', dest='restore_cluster_stackname', help='Set the cluster to restore from. Fx "prod5"'
+    )
+    parser.add_argument('--list_backups', help='List backups that can be restored', action='store_true')
+    parser.add_argument(
+        '--restore_backup', dest='backup_id', help='Restore the snapshot with <backup_id>. The cluster must be empty'
+    )
 
+    return parser
+
+
+def main() -> None:
+    parser = init_argparse()
+    args = parser.parse_args()
+    if len(sys.argv) == 1:
+        parser.print_help(sys.stderr)
+        sys.exit(0)
+    if args.name is None and 'CLOUD_CLUSTER' in os.environ:
+        args.name = os.environ['CLOUD_CLUSTER']
+    elif args.name is None:
+        raise Exception("No name provided, please provide it with --name")
+    if args.run:
+        run(args.name)
+
+    elif args.restore_cluster_stackname:
+        cluster_node = ClusterNode(args.name)
+        backup_manager = BackupManager(cluster_node)
+        backup_manager.configure_restore_repository(args.set_restore_repository)
+
+    elif args.list_backups:
+        cluster_node = ClusterNode(args.name)
+        backup_manager = BackupManager(cluster_node)
+        print(backup_manager.list_snapshots_from_restore_repository())
+    elif args.backup_id:
+        cluster_node = ClusterNode(args.name)
+        backup_manager = BackupManager(cluster_node)
+        backup_manager.restore_backup(args.backup_id)
+
+
+def run(name):
     cluster_node = ClusterNode(name)
 
     try:
@@ -95,3 +139,7 @@ def run():
 
     while True:  # Keep main thread alive until cancelled
         time.sleep(600)
+
+
+if __name__ == '__main__':
+    main()
