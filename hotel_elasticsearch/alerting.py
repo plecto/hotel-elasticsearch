@@ -1,11 +1,15 @@
-import botocore
+import logging
+
 import requests
 from aws_secretsmanager_caching import SecretCacheConfig, SecretCache
+from requests.exceptions import HTTPError
 
 from hotel_elasticsearch.aws_utils import botocore_client_factory
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import HotelElasticSearchConfig
 
+
+logger = logging.getLogger('hotel_elasticsearch.cluster_node')
 
 class AWSSecretsMixin(object):
     @staticmethod
@@ -45,7 +49,7 @@ class PagerDutyAlerter(AWSSecretsMixin, BaseAlerter):
             assert 'secret_name' in self.config['pagerduty']
 
     def alert(self, message):
-        requests.post(
+        result = requests.post(
             'https://events.pagerduty.com/v2/enqueue',
             json={
                 'routing_key': self.get_secret(self.config['pagerduty']['secret_name']),
@@ -57,6 +61,11 @@ class PagerDutyAlerter(AWSSecretsMixin, BaseAlerter):
                 }
             }
         )
+        try:
+            result.raise_for_status()
+        except HTTPError as e:
+            logger.exception(e.response.text)
+            logger.exception(requests.exceptions.HTTPError)
 
 
 def alerter_factory(cluster_node):

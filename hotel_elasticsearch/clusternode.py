@@ -17,6 +17,8 @@ class ClusterNode(object):
         self._backup_path = parser.stack
         self._tags = None
 
+    def __str__(self):
+        return self.elastic_search_cluster_name
 
     @property
     def elastic_search_cluster_name(self):
