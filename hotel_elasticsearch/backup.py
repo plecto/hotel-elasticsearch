@@ -68,7 +68,7 @@ class BackupManager(object):
         try:
             result = requests.post(
                 f'http://localhost:9200/_snapshot/cluster_restore/{backup_id}/_restore',
-                {
+                json={
                     'indices': '*,-.*',
                 }
             )
