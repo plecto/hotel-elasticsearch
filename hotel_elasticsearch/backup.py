@@ -74,12 +74,13 @@ class BackupManager(object):
             )
             result.raise_for_status()
         except HTTPError as e:
+            logger.error(e.response.text)
             logger.exception(e)
             raise BackupException('Backup restore request failed')
 
     def cluster_is_empty(self):
-        response = requests.get('/_cluster/stats')
-        if response.json()['indices']['count'] > 0:
+        response = requests.get('http://localhost:9200/*,-.*/_stats?pretty')
+        if response.json()['_shards']['total'] > 0:
             return False
         return True
 
@@ -165,7 +166,7 @@ class BackupManager(object):
     def list_snapshots_from_restore_repository(self):
         result = requests.get('http://localhost:9200/_cat/snapshots/cluster_restore/?h=id,s,sti,eti,i,ss,fs,r&v')
         result.raise_for_status()
-        return result.text()
+        return result.text
 
 
     @property
