@@ -86,7 +86,7 @@ def main() -> None:
     elif args.restore_cluster_stackname:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)
-        backup_manager.configure_restore_repository(args.set_restore_repository)
+        backup_manager.configure_restore_repository(args.restore_cluster_stackname)
 
     elif args.list_backups:
         cluster_node = ClusterNode(args.name)
