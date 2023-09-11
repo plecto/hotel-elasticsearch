@@ -8,13 +8,12 @@ from hotel_elasticsearch.configuration import HotelElasticSearchConfig
 
 
 class AWSSecretsMixin(object):
-    def __init__(self, *args, **kwargs):
+    @staticmethod
+    def get_secret(secret_name):
         client = botocore_client_factory('secretsmanager')
-        cache_config = SecretCacheConfig()  # See below for defaults
-        self.cache = SecretCache(config=cache_config, client=client)
-
-    def get_secret(self, secret_name):
-        return self.cache.get_secret_string(secret_name)
+        cache_config = SecretCacheConfig()  # Initializes an LRU cache on the thread
+        cache = SecretCache(config=cache_config, client=client)
+        return cache.get_secret_string(secret_name)
 
 
 class BaseAlerter(object):
@@ -30,7 +29,7 @@ class BaseAlerter(object):
         raise NotImplementedError
 
 
-class NoopAlerter(AWSSecretsMixin, BaseAlerter):
+class NoopAlerter(BaseAlerter):
     def validate_config(self):
         pass
 
@@ -39,9 +38,6 @@ class NoopAlerter(AWSSecretsMixin, BaseAlerter):
 
 
 class PagerDutyAlerter(AWSSecretsMixin, BaseAlerter):
-    def __init__(self, *args, **kwargs):
-        super().__init__(self, *args, **kwargs)
-
     def validate_config(self):
         assert 'pagerduty' in self.config
         assert 'type' in self.config['pagerduty']
@@ -65,7 +61,7 @@ class PagerDutyAlerter(AWSSecretsMixin, BaseAlerter):
 
 def alerter_factory(cluster_node):
     config = HotelElasticSearchConfig()
-    if config['hotel']['alerter'] == 'pagerduty':
-        return PagerDutyAlerter(config['hotel']['pagerduty'], cluster_node)
+    if config['hotel']['alerting']['alerter'] == 'pagerduty':
+        return PagerDutyAlerter(config['hotel']['alerting'], cluster_node)
     else:
         return NoopAlerter({}, cluster_node)

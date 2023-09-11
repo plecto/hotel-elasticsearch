@@ -37,8 +37,10 @@ class HotelElasticSearchConfig(OrderedDict):
         # Set defaults
         if 'hotel' not in self:
             self['hotel'] = OrderedDict()
-        if 'alerter' not in self['hotel']:
-            self['hotel']['alerter'] = None
+        if 'alerting' not in self['hotel']:
+            self['hotel']['alerting'] = OrderedDict()
+            if 'alerter' not in self['hotel']['alerting']:
+                self['hotel']['alerting']['alerter'] = None
         if 'backup' not in self['hotel']:
             self['hotel']['backup'] = OrderedDict()
         if 'bucket' not in self['hotel']['backup']:
