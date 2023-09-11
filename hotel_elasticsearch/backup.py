@@ -163,7 +163,7 @@ class BackupManager(object):
             raise BackupException('Could not configure backup schedule')
 
     def list_snapshots_from_restore_repository(self):
-        result = requests.get('http://localhost:9200/_cat/snapshots/cluster_restore/?h=id,s,sti,eti,i,ss,ff,r&v')
+        result = requests.get('http://localhost:9200/_cat/snapshots/cluster_restore/?h=id,s,sti,eti,i,ss,fs,r&v')
         result.raise_for_status()
         return result.text()
 
