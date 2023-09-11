@@ -5,6 +5,7 @@ import time
 
 import requests
 
+from hotel_elasticsearch.alerting import alerter_factory
 from hotel_elasticsearch.backup import backup_thread, BackupManager
 from hotel_elasticsearch.clusternode import ClusterNode
 from hotel_elasticsearch.configuration import ElasticSearchConfig
@@ -66,6 +67,7 @@ def init_argparse() -> argparse.ArgumentParser:
     parser.add_argument(
         '--restore_backup', dest='backup_id', help='Restore the snapshot with <backup_id>. The cluster must be empty'
     )
+    parser.add_argument('--test_alerting', help='Test the alerting', action='store_true')
 
     return parser
 
@@ -96,6 +98,10 @@ def main() -> None:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)
         backup_manager.restore_backup(args.backup_id)
+    elif args.test_alerting:
+        cluster_node = ClusterNode(args.name)
+        alerter = alerter_factory(cluster_node)
+        alerter.alert(f"This is a test invocation of the alerting system from {cluster_node}")
 
 
 def run(name):
