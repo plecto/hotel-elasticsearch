@@ -65,6 +65,11 @@ def init_argparse() -> argparse.ArgumentParser:
     )
     parser.add_argument('--list_backups', help='List backups that can be restored', action='store_true')
     parser.add_argument(
+        '--initiate_backup',
+        help='Initiate a backup now. Requires the backup repository and SLM to be defined already',
+        action='store_true'
+    )
+    parser.add_argument(
         '--restore_backup', dest='backup_id', help='Restore the snapshot with <backup_id>. The cluster must be empty'
     )
     parser.add_argument('--test_alerting', help='Test the alerting', action='store_true')
@@ -89,7 +94,10 @@ def main() -> None:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)
         backup_manager.configure_restore_repository(args.restore_cluster_stackname)
-
+    elif args.initiate_backup:
+        cluster_node = ClusterNode(args.name)
+        backup_manager = BackupManager(cluster_node)
+        backup_manager.initiate_backup()
     elif args.list_backups:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)

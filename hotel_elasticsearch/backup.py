@@ -54,6 +54,16 @@ class BackupManager(object):
             alerter = alerter_factory(self.cluster_node)
             alerter.alert(str(e))
 
+    def initiate_backup(self):
+        self._check_backup_configuration()
+        try:
+            result = requests.post('_slm/policy/nightly-snapshots/_execute')
+            result.raise_for_status()
+        except HTTPError as e:
+            logger.error(e.response.text)
+            logger.exception(e)
+            raise BackupException('Backup request failed')
+
     def _check_backup_configuration(self):
         result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
         result.raise_for_status()
