@@ -146,7 +146,6 @@ def run(name):
         except FileNotFoundError():
             pass
 
-
     backup = Thread(target=backup_thread, args=(cluster_node,) )
     backup.daemon = True
     backup.start()

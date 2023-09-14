@@ -57,7 +57,7 @@ class BackupManager(object):
     def initiate_backup(self):
         self._check_backup_configuration()
         try:
-            result = requests.post('http://localhost:9200/_slm/policy/nightly-backups/_execute')
+            result = requests.post('http://localhost:9200/_slm/policy/nightly-backup/_execute')
             result.raise_for_status()
         except HTTPError as e:
             logger.error(e.response.text)
