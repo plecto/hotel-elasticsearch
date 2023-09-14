@@ -1,6 +1,8 @@
+import logging
 from collections import OrderedDict
 import yaml
 
+logger = logging.getLogger('cluster_node')
 
 class ElasticSearchConfig(OrderedDict):
     def __init__(self, cluster, config_file="/etc/elasticsearch/elasticsearch.yml"):
@@ -32,7 +34,7 @@ class HotelElasticSearchConfig(OrderedDict):
             with open(config_file) as f:
                 super(HotelElasticSearchConfig, self).__init__(sorted(yaml.safe_load(f.read()).items()))
         except FileNotFoundError:
-            pass
+            logger.warning(f"Config file {config_file} not found, using defaults")
 
         # Set defaults
         if 'hotel' not in self:
