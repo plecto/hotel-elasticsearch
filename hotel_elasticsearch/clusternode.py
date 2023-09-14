@@ -47,8 +47,6 @@ class ClusterNode(object):
             logger.exception('Could not determine if this node is the elected master')
             return False
 
-
-
     @property
     def is_data(self):
         return 'data' in self._name
