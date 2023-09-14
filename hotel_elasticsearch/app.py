@@ -64,6 +64,7 @@ def init_argparse() -> argparse.ArgumentParser:
         '--set_restore_cluster', dest='restore_cluster_stackname', help='Set the cluster to restore from. Fx "prod5"'
     )
     parser.add_argument('--list_backups', help='List backups that can be restored', action='store_true')
+    parser.add_argument('--configure_backup', help='Configure the backup repository', action='store_true')
     parser.add_argument(
         '--initiate_backup',
         help='Initiate a backup now. Requires the backup repository and SLM to be defined already',
@@ -89,11 +90,14 @@ def main() -> None:
         raise Exception("No name provided, please provide it with --name")
     if args.run:
         run(args.name)
-
     elif args.restore_cluster_stackname:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)
         backup_manager.configure_restore_repository(args.restore_cluster_stackname)
+    elif args.configure_backup:
+        cluster_node = ClusterNode(args.name)
+        backup_manager = BackupManager(cluster_node)
+        backup_manager.configure_backup()
     elif args.initiate_backup:
         cluster_node = ClusterNode(args.name)
         backup_manager = BackupManager(cluster_node)
