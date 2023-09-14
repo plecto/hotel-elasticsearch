@@ -1,53 +1,53 @@
 from unittest import TestCase
-from hotel_elasticsearch.cluster import Cluster
+from hotel_elasticsearch.clusternode import ClusterNode
 
 
 class TestCluster(TestCase):
 
     def test_elastic_cluster_name(self):
         self.assertEqual(
-            Cluster("elasticsearch-prod-master-h0slave-r01").elastic_search_cluster_name,
-            "elasticsearch-prod"
+            ClusterNode("elasticsearch-prod1-master-h0slave-r01").elastic_search_cluster_name,
+            "elasticsearch-prod1"
         )
 
     def test_elastic_cluster_master(self):
         self.assertEqual(
-            Cluster("elasticsearch-prod-master-h0slave-r01").master,
+            ClusterNode("elasticsearch-prod1-master-h0slave-r01").is_master,
             True
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-client-h0slave-r01").master,
+            ClusterNode("elasticsearch-prod1-client-h0slave-r01").is_master,
             False
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-data-h0slave-r01").master,
+            ClusterNode("elasticsearch-prod1-data-h0slave-r01").is_master,
             False
         )
 
     def test_elastic_cluster_client(self):
         self.assertEqual(
-            Cluster("elasticsearch-prod-master-h0slave-r01").client,
+            ClusterNode("elasticsearch-prod1-master-h0slave-r01").is_client,
             False
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-client-h0slave-r01").client,
+            ClusterNode("elasticsearch-prod1-client-h0slave-r01").is_client,
             True
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-data-h0slave-r01").client,
+            ClusterNode("elasticsearch-prod1-data-h0slave-r01").is_client,
             False
         )
 
     def test_elastic_cluster_data(self):
         self.assertEqual(
-            Cluster("elasticsearch-prod-master-h0slave-r01").data,
+            ClusterNode("elasticsearch-prod1-master-h0slave-r01").is_data,
             False
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-client-h0slave-r01").data,
+            ClusterNode("elasticsearch-prod1-client-h0slave-r01").is_data,
             False
         )
         self.assertEqual(
-            Cluster("elasticsearch-prod-data-h0slave-r01").data,
+            ClusterNode("elasticsearch-prod1-data-h0slave-r01").is_data,
             True
         )
