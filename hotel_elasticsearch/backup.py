@@ -38,7 +38,7 @@ class BackupManager(object):
                 result.raise_for_status()
             except HTTPError as e:
                 logger.exception(e)
-                raise BackupException('Backup listing request failed')
+                raise BackupException('Backup listing request failed') from e
 
             result_dict = result.json()
             if 'snapshots' not in result_dict or len(result_dict['snapshots']) == 0:
@@ -62,7 +62,7 @@ class BackupManager(object):
         except HTTPError as e:
             logger.error(e.response.text)
             logger.exception(e)
-            raise BackupException('Backup request failed')
+            raise BackupException('Backup request failed') from e
 
     def _check_backup_configuration(self):
         result = requests.get('http://localhost:9200/_snapshot/cluster_backup')
@@ -86,7 +86,7 @@ class BackupManager(object):
         except HTTPError as e:
             logger.error(e.response.text)
             logger.exception(e)
-            raise BackupException('Backup restore request failed')
+            raise BackupException('Backup restore request failed') from e
 
     def cluster_is_empty(self):
         response = requests.get('http://localhost:9200/*,-.*/_stats?pretty')
@@ -125,7 +125,7 @@ class BackupManager(object):
             logger.exception(e)
             # Even though the request fails the repository is still created and should be deleted.
             requests.delete('http://localhost:9200/_snapshot/cluster_backup')
-            raise BackupException('Could not configure backup repository')
+            raise BackupException('Could not configure backup repository') from e
 
     def configure_restore_repository(self, backup_path, bucket=None):
         if bucket is None:
